@@ -1,0 +1,211 @@
+import pedpy
+import jupedsim as jps
+import shapely
+import pandas as pd
+from shapely.geometry import Polygon
+from shapely.plotting import plot_polygon, plot_points
+import matplotlib.pyplot as plt 
+import pathlib
+import numpy as np
+
+def load_coordinates(file_path):
+    data = pd.read_csv(file_path)
+    return list(zip(data["x"], data["y"]))
+
+# Load all geometries
+area = load_coordinates("./Geometries/Walkable.csv")
+wall1 = load_coordinates("./Geometries/Walls1.csv")
+wall2 = load_coordinates("./Geometries/Walls2.csv")
+cols = load_coordinates("./Geometries/Columns.csv")
+desk = load_coordinates("./Geometries/Bounding2.csv")
+cols_list = [cols[i:i+4] for i in range(0, len(cols), 4)]
+desk_list = [desk[i:i+4] for i in range(0, len(desk), 4)]
+
+# for i in range(0, len(desk_list)):
+#     desk_list[i].append(desk_list[i][0])
+
+holes = [wall1[::-1], wall2[::-1]]
+
+
+for i in range(0, len(cols_list)):
+    holes.append(cols_list[i][::-1])
+
+# j = 0
+# for i in range(0, len(desk_list)):
+#     if j % 3 != 0:
+#         holes.append(desk_list[i])
+#     else:
+#         holes.append(desk_list[i][::-1])
+#     j += 1
+
+for i in range(0, len(desk_list)):
+    holes.append(desk_list[i][::-1])
+
+walkable = Polygon(area, holes)
+
+
+exit1 = Polygon(load_coordinates("./Geometries/Exit1.csv"))
+exit2 = Polygon(load_coordinates("./Geometries/Exit2.csv"))
+
+spawn1 = load_coordinates("./Geometries/Spawn1.csv")
+spawn2 = load_coordinates("./Geometries/Spawn2.csv")
+spawn3 = load_coordinates("./Geometries/Spawn3.csv")
+spawn4 = load_coordinates("./Geometries/Spawn4.csv")
+spawn5 = load_coordinates("./Geometries/Spawn5.csv")
+
+spawn1_poly = shapely.Polygon(spawn1)
+spawn2_poly = shapely.Polygon(spawn2)
+spawn3_poly = shapely.Polygon(spawn3)
+spawn4_poly = shapely.Polygon(spawn4)
+spawn5_poly = shapely.Polygon(spawn5)
+
+plot_polygon(walkable)
+plot_polygon(exit1, color="red")
+plot_polygon(exit2, color="red")
+plot_points(spawn1_poly, color="blue")
+plot_points(spawn2_poly, color="blue")
+plot_points(spawn3_poly, color="blue")
+plot_points(spawn4_poly, color="blue")
+plot_points(spawn5_poly, color="blue")
+
+
+
+trajectory_file = "./Trajectories/Waypoint.sqlite"
+simulation_cfsm = jps.Simulation(
+    model=jps.CollisionFreeSpeedModel(),
+    geometry=walkable,
+    trajectory_writer=jps.SqliteTrajectoryWriter(
+        output_file=pathlib.Path(trajectory_file)
+    ),
+)
+
+
+switch_point = (245.63, 35.08)
+waypoints = (240.7, 42.7)
+
+distance_to_waypoints = 0.5
+distance_to_switch = 0.5
+
+switch_id = simulation_cfsm.add_waypoint_stage(switch_point, distance_to_switch)
+waypoint_ids = simulation_cfsm.add_waypoint_stage(waypoints, distance_to_waypoints)
+
+exit1_id = simulation_cfsm.add_exit_stage(exit1.exterior.coords[:-1])
+
+journey1 = jps.JourneyDescription([switch_id, waypoint_ids, exit1_id])
+
+journey1.set_transition_for_stage(
+    switch_id, jps.Transition.create_fixed_transition(waypoint_ids)
+)
+journey1.set_transition_for_stage(
+    waypoint_ids, jps.Transition.create_fixed_transition(exit1_id)
+)
+
+journey1_id = simulation_cfsm.add_journey(journey1)
+
+exit2_id = simulation_cfsm.add_exit_stage(exit2.exterior.coords[:-1])
+journey2 = jps.JourneyDescription([waypoint_ids, exit2_id])
+journey2_id = simulation_cfsm.add_journey(journey2)
+# t = simulation_cfsm.switch_agent_journey()
+
+import random
+x = random.sample(spawn1, 10)
+start_positions = x
+for position in start_positions:
+    simulation_cfsm.add_agent(
+        jps.CollisionFreeSpeedModelAgentParameters(
+            stage_id=switch_id,
+            journey_id=journey1_id,
+            position=position,
+            radius=0.05,
+        )
+    )
+
+# start_positions = spawn2
+# for position in start_positions:
+#     simulation_cfsm.add_agent(
+#         jps.CollisionFreeSpeedModelAgentParameters(
+#             journey_id=journey1_id,
+#             stage_id=exit1_id,
+#             position=position,
+#             radius=0.01,
+#         )
+#     )
+
+# start_positions = spawn3
+# for position in start_positions:
+#     simulation_cfsm.add_agent(
+#         jps.CollisionFreeSpeedModelAgentParameters(
+#             journey_id=journey1_id,
+#             stage_id=exit1_id,
+#             position=position,
+#             radius=0.01,
+#         )
+#     )
+
+# start_positions = spawn4
+# for position in start_positions:
+#     simulation_cfsm.add_agent(
+#         jps.CollisionFreeSpeedModelAgentParameters(
+#             journey_id=journey1_id,
+#             stage_id=exit1_id,
+#             position=position,
+#             radius=0.01,
+#         )
+#     )
+
+# start_positions = spawn5
+# for position in start_positions:
+#     simulation_cfsm.add_agent(
+#         jps.CollisionFreeSpeedModelAgentParameters(
+#             journey_id=journey1_id,
+#             stage_id=exit1_id,
+#             position=position,
+#             radius=0.01,
+#         )
+#     )
+
+while (simulation_cfsm.agent_count() > 0 and simulation_cfsm.iteration_count() < 5000):
+    simulation_cfsm.iterate()
+
+from jupedsim.internal.notebook_utils import animate, read_sqlite_file
+
+trajectory_data, walkable_area = read_sqlite_file(trajectory_file)
+speed = pedpy.compute_individual_speed(traj_data=trajectory_data, frame_step=5)
+speed = speed.merge(trajectory_data.data, on=["id", "frame"], how="left")
+
+animate(trajectory_data, walkable_area)
+pedpy.plot_trajectories(
+    traj=trajectory_data, walkable_area=pedpy.WalkableArea(walkable)
+)
+
+import sqlite3
+from matplotlib.animation import FuncAnimation
+
+db_path = './Trajectories/Waypoint.sqlite'
+conn = sqlite3.connect(db_path)
+
+query = "SELECT * FROM trajectory_data;"
+df = pd.read_sql_query(query, conn)
+conn.close()
+fig, ax = plt.subplots()
+scat = ax.scatter([], [])
+
+def init():
+    ax.set_xlim(df['pos_x'].min(), df['pos_x'].max())
+    ax.set_ylim(df['pos_y'].min(), df['pos_y'].max())
+    return scat,
+
+def animate(i):
+    current_frame = df[df['frame'] == i]
+    scat.set_offsets(current_frame[['pos_x', 'pos_y']].values)
+    return scat,
+
+num_frames = df['frame'].max()
+anim = FuncAnimation(fig, animate, init_func=init, frames=num_frames, interval=20, blit=True)
+
+plot_polygon(walkable, color="grey", linewidth=0.5)
+plot_polygon(exit1, color="red")
+plot_polygon(exit2, color="red")
+
+plt.show()
+
