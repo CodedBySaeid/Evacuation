@@ -477,6 +477,9 @@ The following values are especially relevant when adapting the model to another 
 | `frame_step` | Temporal step used in individual-speed calculations |
 | `grid_size` | Spatial resolution for profile calculations |
 
+Due to the proximity of the objects (tables), Social Force obstacleScale is reduced to 250.
+
+
 ## Notes and limitations
 
 - The model uses the JuPedSim **Social Force Model**.
@@ -489,44 +492,10 @@ The following values are especially relevant when adapting the model to another 
 - The custom animation assumes that `mappp-Model.png` uses the same coordinate system as the simulation geometry.
 - The current code contains both simulation and post-processing/analysis in one script. For larger experiments, separating these into modules can make scenario management easier.
 
-## Suggested experiment workflow
-
-For multiple evacuation scenarios, a practical workflow is:
-
-1. Modify the pedestrian population.
-2. Modify the journey percentages.
-3. Change the random seed if a different initial distribution is required.
-4. Run the simulation.
-5. Save the SQLite trajectory file under a unique name.
-6. Run the analysis section.
-7. Compare evacuation time, density, speed, and flow between scenarios.
-
-For example:
-
-```text
-Trajectories/
-├── scenario_50_50.sqlite
-├── scenario_70_30.sqlite
-└── scenario_90_10.sqlite
-```
-
-This makes it possible to compare different exit-assignment strategies without overwriting previous results.
-
 ## Reproducibility
 
-For reproducible experiments, keep track of:
+For reproducible experiments install the packages in requirements.txt, also python version used is 3.10.5.
 
-- Python version
-- JuPedSim version
-- PedPy version
-- input geometry in `readcsv.py`
-- pedestrian counts
-- journey percentages
-- random seed
-- simulation iteration limit
-- analysis parameters
-
-It is recommended to record these parameters alongside each generated SQLite trajectory file.
 
 ## License
 
@@ -534,4 +503,4 @@ No license is specified in the current project. If this repository is intended f
 
 ## Author
 
-Add the project author, affiliation, and contact information here.
+This project was done by CodedBySaeid!
