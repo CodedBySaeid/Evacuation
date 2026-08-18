@@ -322,7 +322,7 @@ animate(trajectory_data, walkable_area)
 ```
 
 This displays the simulated pedestrian trajectories using JuPedSim's notebook utilities.
-![Simulation Animation](Output/animation/movement.gif)
+
 ### PedPy trajectory plot
 
 ```python
@@ -343,7 +343,7 @@ map.png
 ```
 
 The animation updates the pedestrian positions frame by frame.
-
+![Simulation Animation](Output/animation/pedestrian_movement.gif)
 ## Trajectory analysis
 
 After the simulation, the script uses PedPy to analyze the resulting trajectories.
@@ -380,9 +380,9 @@ classic_density = compute_classic_density(
     measurement_area=measurement_area
 )
 ```
-
+![Classic Density](Output/plots/classic_density.png)
 It also calculates Voronoi-based density using individual Voronoi polygons.
-
+![Voronoi Density](Output/plots/voronoi_density.png)
 ### Individual pedestrian speed
 
 PedPy is used to calculate individual pedestrian speeds with different boundary-handling methods, including:
@@ -391,6 +391,8 @@ PedPy is used to calculate individual pedestrian speeds with different boundary-
 - `BORDER_SINGLE_SIDED`
 
 The current analysis uses a frame step of 25 for some individual-speed calculations.
+![Pedestrian 25 Speed (excluded)](Output/plots/speed_pedestrian_25_excluded.png)
+![Pedestrian 25 Speed (singlesided)](Output/plots/speed_pedestrian_25_singlesided.png)
 
 ### Mean and Voronoi speed
 
@@ -400,6 +402,8 @@ The script calculates:
 - Voronoi speed in the measurement area
 
 These are plotted as time-dependent quantities.
+![Mean Speed](Output/plots/mean_speed.png)
+![Voronoi Speed](Output/plots/voronoi_speed.png)
 
 ### Flow
 
@@ -408,6 +412,7 @@ The script calculates pedestrian counts crossing the measurement line using:
 ```python
 compute_n_t(...)
 ```
+![Pedestrian Counts Crossing the Measurement Line](Output/plots/nt_plot.png)
 
 and then calculates flow using:
 
@@ -416,6 +421,7 @@ compute_flow(...)
 ```
 
 The resulting plots describe pedestrian throughput at the bottleneck.
+![Flow](Output/plots/flot_plot.png)
 
 ### Neighborhood analysis
 
@@ -427,6 +433,7 @@ The current example uses:
 pedestrian_id = 8
 frame = 350
 ```
+![Pedestrian 8 Neighborhood](Output/plots/neighborhood_plot.png)
 
 ### Time-distance analysis
 
@@ -437,6 +444,7 @@ compute_time_distance_line(...)
 ```
 
 to analyze pedestrian distance/time relationships relative to the measurement line.
+![Pedestiran distance/time to the measurement line](Output/plots/time_distance.png)
 
 ### Spatial profiles
 
@@ -457,6 +465,8 @@ and examines frames:
 min_frame_profiles = 250
 max_frame_profiles = 300
 ```
+![Speed Profile](Output/plots/speed_profile.png)
+![Density Profile](Output/plots/density_profile.png)
 
 The speed profile uses the Voronoi method, and the density profile also uses the Voronoi method.
 
@@ -471,7 +481,7 @@ The following values are especially relevant when adapting the model to another 
 | `WAYPOINT_DISTANCE` | Distance threshold associated with waypoint stages |
 | `journey1_percentage` | Percentage of pedestrians assigned to Journey 1 |
 | `random.seed(...)` | Controls reproducibility of spawn-point sampling |
-| `3000` | Maximum number of simulation iterations |
+| `5000` | Maximum number of simulation iterations |
 | `measurement_area` | Region used for density/speed measurements |
 | `measurement_line` | Line used for pedestrian crossing/flow measurements |
 | `frame_step` | Temporal step used in individual-speed calculations |
@@ -494,13 +504,12 @@ Due to the proximity of the objects (tables), Social Force obstacleScale is redu
 
 ## Reproducibility
 
-For reproducible experiments install the packages in requirements.txt, also python version used is 3.10.5.
+For reproducible experiments install the packages in requirements.txt, also python version 3.10.5.
 
 
 ## License
 
-No license is specified in the current project. If this repository is intended for public distribution, add an appropriate `LICENSE` file and update this section.
-
+No license is specified in the current project.
 ## Author
 
 This project was done by CodedBySaeid!
