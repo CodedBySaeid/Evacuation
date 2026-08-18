@@ -86,7 +86,7 @@ pip install jupedsim pedpy shapely pandas numpy matplotlib
 
 ## Input data
 
-### `readcsv.py`
+### `loadfiles.py`
 
 The simulation imports:
 
@@ -106,7 +106,7 @@ These values are used to construct the simulation geometry and to place pedestri
 The custom Matplotlib animation loads:
 
 ```text
-mappp-Model.png
+map.png
 ```
 
 If this file is missing, the simulation itself can still produce the trajectory database, but the custom background-image animation will not work.
@@ -146,15 +146,15 @@ The current configuration contains seven groups.
 
 | Group | Spawn points sampled | Journey 1 percentage |
 |---|---:|---:|
-| Class 1 | 37 | 10% |
-| Class 2 | 41 | 30% |
-| Class 3 | 2 | 50% |
-| Class 4 | 0 | 70% |
-| Class 5 | 0 | 90% |
-| Site 1 | 10 | 70% |
-| Site 2 | 15 | 50% |
+| Class 1 | 37 | 20% |
+| Class 2 | 35 | 40% |
+| Class 3 | 15 | 50% |
+| Class 4 | 35 | 60% |
+| Class 5 | 35 | 80% |
+| Site 1 | 25 | 70% |
+| Site 2 | 25 | 50% |
 
-This corresponds to 105 pedestrians in the current configuration.
+This corresponds to 207 pedestrians in the current configuration.
 
 For each group, pedestrians are split between the two journeys using `journey1_percentage`.
 
@@ -167,11 +167,11 @@ add_agents(
     switch_id1,
     journey1_id1,
     journey2_id1,
-    journey1_percentage=10
+    journey1_percentage=20
 )
 ```
 
-means that approximately 10% of the selected Class 1 pedestrians are assigned to Journey 1 and the remainder to Journey 2.
+means that approximately 20% of the selected Class 1 pedestrians are assigned to Journey 1 and the remainder to Journey 2.
 
 ## Evacuation journeys
 
@@ -217,13 +217,13 @@ The number of pedestrians sampled from each spawn-point set is controlled here:
 
 ```python
 start_positions1 = random.sample(c1_spawn_points, 37)
-start_positions2 = random.sample(c2_spawn_points, 41)
-start_positions3 = random.sample(c3_spawn_points, 2)
-start_positions4 = random.sample(c4_spawn_points, 0)
-start_positions5 = random.sample(c5_spawn_points, 0)
+start_positions2 = random.sample(c2_spawn_points, 35)
+start_positions3 = random.sample(c3_spawn_points, 15)
+start_positions4 = random.sample(c4_spawn_points, 35)
+start_positions5 = random.sample(c5_spawn_points, 35)
 
-start_positions6 = random.sample(s1_spawn_points, 10)
-start_positions7 = random.sample(s2_spawn_points, 15)
+start_positions6 = random.sample(s1_spawn_points, 25)
+start_positions7 = random.sample(s2_spawn_points, 25)
 ```
 
 To simulate a different population, change these values.
@@ -259,7 +259,7 @@ assigns all pedestrians to Journey 2.
 The script sets:
 
 ```python
-random.seed(1)
+random.seed(42)
 ```
 
 This makes the Python `random.sample()` selection reproducible between runs, provided the input data and execution environment remain unchanged.
@@ -267,7 +267,7 @@ This makes the Python `random.sample()` selection reproducible between runs, pro
 If you want a different initial population distribution, change the seed:
 
 ```python
-random.seed(42)
+random.seed(1)
 ```
 
 ## Simulation termination
@@ -281,20 +281,20 @@ simulation_sfm.agent_count() > 0
 and
 
 ```python
-simulation_sfm.iteration_count() < 3000
+simulation_sfm.iteration_count() < 5000
 ```
 
 In other words, the simulation stops when either:
 
 - all pedestrians have evacuated, or
-- 3000 simulation iterations have been reached.
+- 5000 simulation iterations have been reached.
 
 To change the maximum number of iterations, modify:
 
 ```python
 while (
     simulation_sfm.agent_count() > 0
-    and simulation_sfm.iteration_count() < 3000
+    and simulation_sfm.iteration_count() < 5000
 ):
     simulation_sfm.iterate()
 ```
@@ -322,7 +322,7 @@ animate(trajectory_data, walkable_area)
 ```
 
 This displays the simulated pedestrian trajectories using JuPedSim's notebook utilities.
-
+![Simulation Animation](Output/animation/movement.gif)
 ### PedPy trajectory plot
 
 ```python
@@ -333,13 +333,13 @@ pedpy.plot_trajectories(
 ```
 
 This plots pedestrian trajectories over the walkable area.
-
+![Trajectory Plots](Output/plots/trajectories_plot.png)
 ### Custom Matplotlib animation
 
 The script also loads the SQLite database directly and overlays pedestrian positions on:
 
 ```text
-mappp-Model.png
+map.png
 ```
 
 The animation updates the pedestrian positions frame by frame.
